@@ -1,13 +1,13 @@
 // ==============================================================
 //  BOT WHATSAPP + CLAUDE  —  Seu "Colega Virtual" no Grupo
-//  Versão: Baileys v6 (QR Code corrigido)
+//  Versão: Baileys com QR Code corrigido
 //  Autor: configurado para Namura / Turma ITA
 // ==============================================================
 
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const Anthropic = require('@anthropic-ai/sdk');
-const pino = require('pino');
 const qrcode = require('qrcode-terminal');
+const pino = require('pino');
 
 // ──────────────────────────────────────────────────────────────
 // ⚙️  CONFIGURAÇÕES
@@ -33,17 +33,18 @@ async function startBot() {
 
     const sock = makeWASocket({
         auth: state,
-        logger: pino({ level: 'silent' }),
-        printQRInTerminal: false
+        printQRInTerminal: false,
+        logger: pino({ level: 'silent' })
     });
 
     sock.ev.on('creds.update', saveCreds);
 
+    // Exibe QR Code nos logs
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            console.log('\n📱 Escaneie o QR Code abaixo com o WhatsApp do bot:\n');
+            console.log('\n📱 ESCANEIE O QR CODE ABAIXO COM O WHATSAPP DO BOT:\n');
             qrcode.generate(qr, { small: true });
         }
 
