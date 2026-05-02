@@ -55,12 +55,8 @@ async function startBot() {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr && !state.creds.registered) {
-            const readline = require('readline').createInterface({ input: process.stdin, output: process.stdout });
-            readline.question('📱 Digite seu número com DDI (ex: 5512999999999): ', async (numero) => {
-                readline.close();
-                const code = await sock.requestPairingCode(numero.trim());
-                console.log(`\n🔑 SEU CÓDIGO DE PAREAMENTO: ${code}\n`);
-            });
+            const code = await sock.requestPairingCode('5512996802477');
+            console.log(`\n🔑 SEU CÓDIGO DE PAREAMENTO: ${code}\n`);
         }
         if (connection === 'close') {
             const code = lastDisconnect?.error?.output?.statusCode;
