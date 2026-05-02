@@ -1,15 +1,16 @@
 // ==============================================================
 //  BOT WHATSAPP + CLAUDE  —  Seu "Colega Virtual" no Grupo
-//  Versão: Baileys (sem necessidade de Chrome)
+//  Versão: Baileys v6 (QR Code corrigido)
 //  Autor: configurado para Namura / Turma ITA
 // ==============================================================
 
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const Anthropic = require('@anthropic-ai/sdk');
 const pino = require('pino');
+const qrcode = require('qrcode-terminal');
 
 // ──────────────────────────────────────────────────────────────
-// ⚙️  CONFIGURAÇÕES  (só mexa aqui)
+// ⚙️  CONFIGURAÇÕES
 // ──────────────────────────────────────────────────────────────
 
 const NOME_DO_BOT   = 'Amely';
@@ -32,14 +33,19 @@ async function startBot() {
 
     const sock = makeWASocket({
         auth: state,
-        printQRInTerminal: true,
-        logger: pino({ level: 'silent' })
+        logger: pino({ level: 'silent' }),
+        printQRInTerminal: false
     });
 
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('connection.update', (update) => {
-        const { connection, lastDisconnect } = update;
+        const { connection, lastDisconnect, qr } = update;
+
+        if (qr) {
+            console.log('\n📱 Escaneie o QR Code abaixo com o WhatsApp do bot:\n');
+            qrcode.generate(qr, { small: true });
+        }
 
         if (connection === 'close') {
             const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
@@ -49,6 +55,10 @@ async function startBot() {
             console.log(`\n✅ ${NOME_DO_BOT} está online e pronto para responder!\n`);
         }
     });
+
+    // ──────────────────────────────────────────────────────────
+    // 💬  PROCESSAMENTO DE MENSAGENS
+    // ──────────────────────────────────────────────────────────
 
     sock.ev.on('messages.upsert', async ({ messages }) => {
         for (const msg of messages) {
@@ -79,9 +89,7 @@ async function startBot() {
                 });
 
                 const textoResposta = resposta.content[0].text;
-
                 await sock.sendMessage(msg.key.remoteJid, { text: textoResposta }, { quoted: msg });
-
                 console.log(`✅ Respondido: ${textoResposta.substring(0, 50)}...`);
 
             } catch (erro) {
