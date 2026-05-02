@@ -54,14 +54,14 @@ async function startBot() {
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
 
-        if (qr) {
-            const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
-            console.log('\n========================================');
-            console.log('📱 ABRA ESTE LINK NO NAVEGADOR PARA VER O QR CODE:');
-            console.log(qrLink);
-            console.log('========================================\n');
+        if (qr && !state.creds.registered) {
+            const readline = require('readline').createInterface({ input: process.stdin, output: process.stdout });
+            readline.question('📱 Digite seu número com DDI (ex: 5512999999999): ', async (numero) => {
+                readline.close();
+                const code = await sock.requestPairingCode(numero.trim());
+                console.log(`\n🔑 SEU CÓDIGO DE PAREAMENTO: ${code}\n`);
+            });
         }
-
         if (connection === 'close') {
             const code = lastDisconnect?.error?.output?.statusCode;
             const shouldReconnect = code !== DisconnectReason.loggedOut;
