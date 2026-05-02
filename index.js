@@ -55,7 +55,7 @@ async function startBot() {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr && !state.creds.registered) {
-            sock.requestPairingCode('5512996802477').then(code => {
+            sock.requestPairingCode('551296802477').then(code => {
                 console.log(`\n🔑 SEU CÓDIGO DE PAREAMENTO: ${code}\n`);
             });
         }
