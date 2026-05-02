@@ -1,0 +1,14 @@
+{
+  "name": "bot-whatsapp-claude",
+  "version": "1.0.0",
+  "description": "Colega Virtual Claude no WhatsApp",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.23.0",
+    "@anthropic-ai/sdk": "^0.20.0",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
