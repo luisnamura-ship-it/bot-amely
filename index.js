@@ -1,12 +1,11 @@
 // ==============================================================
 //  BOT WHATSAPP + CLAUDE  —  Seu "Colega Virtual" no Grupo
-//  Versão: Baileys com QR Code corrigido
+//  Versão: Baileys com QR Code via link
 //  Autor: configurado para Namura / Turma ITA
 // ==============================================================
 
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const Anthropic = require('@anthropic-ai/sdk');
-const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 
 // ──────────────────────────────────────────────────────────────
@@ -39,13 +38,16 @@ async function startBot() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    // Exibe QR Code nos logs
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            console.log('\n📱 ESCANEIE O QR CODE ABAIXO COM O WHATSAPP DO BOT:\n');
-            qrcode.generate(qr, { small: true });
+            // Gera link direto para escanear o QR Code
+            const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
+            console.log('\n========================================');
+            console.log('📱 ABRA ESTE LINK NO NAVEGADOR PARA VER O QR CODE:');
+            console.log(qrLink);
+            console.log('========================================\n');
         }
 
         if (connection === 'close') {
@@ -56,10 +58,6 @@ async function startBot() {
             console.log(`\n✅ ${NOME_DO_BOT} está online e pronto para responder!\n`);
         }
     });
-
-    // ──────────────────────────────────────────────────────────
-    // 💬  PROCESSAMENTO DE MENSAGENS
-    // ──────────────────────────────────────────────────────────
 
     sock.ev.on('messages.upsert', async ({ messages }) => {
         for (const msg of messages) {
