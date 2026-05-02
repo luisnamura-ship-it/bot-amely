@@ -46,7 +46,7 @@ async function startBot() {
     auth: state,
     printQRInTerminal: false,
     logger: pino({ level: 'silent' }),
-    version: [2, 3000, 1015901307]
+    version: [2, 3000, 1035194821]
 });
 
     sock.ev.on('creds.update', saveCreds);
