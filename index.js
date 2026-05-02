@@ -63,7 +63,7 @@ async function startBot() {
             const code = lastDisconnect?.error?.output?.statusCode;
             const shouldReconnect = code !== DisconnectReason.loggedOut;
             console.log('🔌 Conexão encerrada. Código:', code, '| Reconectando:', shouldReconnect);
-            if (shouldReconnect) startBot();
+            if (shouldReconnect && code !== 408) startBot();
         } else if (connection === 'open') {
             console.log(`\n✅ ${NOME_DO_BOT} está online e pronto para responder!\n`);
         }
