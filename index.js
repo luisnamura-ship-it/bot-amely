@@ -1,12 +1,14 @@
 // ==============================================================
 //  BOT WHATSAPP + CLAUDE  —  Seu "Colega Virtual" no Grupo
-//  Versão: Baileys com QR Code via link
+//  Versão: Baileys com reset de sessão forçado
 //  Autor: configurado para Namura / Turma ITA
 // ==============================================================
 
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const Anthropic = require('@anthropic-ai/sdk');
 const pino = require('pino');
+const fs = require('fs');
+const path = require('path');
 
 // ──────────────────────────────────────────────────────────────
 // ⚙️  CONFIGURAÇÕES
@@ -14,6 +16,7 @@ const pino = require('pino');
 
 const NOME_DO_BOT   = 'Amely';
 const ANTHROPIC_KEY = process.env.ANTHROPIC_KEY || 'SUA_CHAVE_AQUI';
+const AUTH_FOLDER   = 'auth_info';
 const PERSONALIDADE = `
 Você é um assistente inteligente e simpático dentro de um grupo de WhatsApp.
 Responda de forma clara, direta e amigável.
@@ -22,13 +25,22 @@ Mantenha respostas em no máximo 3 parágrafos para não sobrecarregar o grupo.
 `;
 
 // ──────────────────────────────────────────────────────────────
+// 🗑️  LIMPA SESSÃO ANTIGA
+// ──────────────────────────────────────────────────────────────
+
+if (fs.existsSync(AUTH_FOLDER)) {
+    fs.rmSync(AUTH_FOLDER, { recursive: true, force: true });
+    console.log('🗑️  Sessão antiga removida. Gerando novo QR Code...');
+}
+
+// ──────────────────────────────────────────────────────────────
 // 🚀  INICIALIZAÇÃO
 // ──────────────────────────────────────────────────────────────
 
 const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY });
 
 async function startBot() {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info');
+    const { state, saveCreds } = await useMultiFileAuthState(AUTH_FOLDER);
 
     const sock = makeWASocket({
         auth: state,
@@ -42,7 +54,6 @@ async function startBot() {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr) {
-            // Gera link direto para escanear o QR Code
             const qrLink = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
             console.log('\n========================================');
             console.log('📱 ABRA ESTE LINK NO NAVEGADOR PARA VER O QR CODE:');
@@ -51,8 +62,9 @@ async function startBot() {
         }
 
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            console.log('🔌 Conexão encerrada. Reconectando:', shouldReconnect);
+            const code = lastDisconnect?.error?.output?.statusCode;
+            const shouldReconnect = code !== DisconnectReason.loggedOut;
+            console.log('🔌 Conexão encerrada. Código:', code, '| Reconectando:', shouldReconnect);
             if (shouldReconnect) startBot();
         } else if (connection === 'open') {
             console.log(`\n✅ ${NOME_DO_BOT} está online e pronto para responder!\n`);
